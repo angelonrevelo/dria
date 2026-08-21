@@ -1,0 +1,89 @@
+{
+  "tier": "absorb-notesview",
+  "execution": "parallel",
+  "isolation": "worktree",
+  "provision": "link-main",
+  "teardown": "cleanup",
+  "port_range": [7400, 7499],
+  "api": 7407,
+  "scope_item": ["AN1", "AN2", "AN3", "AN4", "AN5", "AN6"],
+  "shared_file": [
+    "ROADMAP.md",
+    "README.md",
+    "docs/ABSORB.md"
+  ],
+  "design_blocked": [
+    {"item": "AN-aac", "why": "Punching through Apple Assessment Mode is not a product goal (unlockdown AAC fail-closed)."},
+    {"item": "AN-capture-hide", "why": "WDA_EXCLUDEFROMCAPTURE / sharingType.none is detected and killed (unlockdown DECONSTRUCTION)."},
+    {"item": "AN-process-spoof", "why": "Renaming the binary to dodge LDB process lists."},
+    {"item": "AN-notesview-keep", "why": "NotesView is a prototype; do not keep a second app."},
+    {"item": "AN-win-overlay", "why": "Windows Tauri overlay vs LDB layered-HWND kill is a later slice."}
+  ],
+  "merge_order": ["constraint", "overlay", "hotkey"],
+  "tip_gate": "bash scripts/overlay-constraint.sh && rg -n hideOverlay dria/Services/HotkeyService.swift && xcodebuild -project dria.xcodeproj -scheme dria -configuration Debug -destination 'platform=macOS' build",
+  "lane": [
+    {
+      "name": "constraint",
+      "item": ["AN3", "AN6"],
+      "owns_file": [
+        "docs/OVERLAY.md",
+        "scripts/overlay-constraint.sh"
+      ],
+      "forbidden_file": [
+        "dria/OverlayPanel.swift",
+        "dria/driaApp.swift",
+        "dria/Views/Settings/CustomizationTab.swift",
+        "dria/Services/HotkeyService.swift",
+        "dria/Views/Settings/GeneralSettingsTab.swift"
+      ],
+      "worktree": "/Users/angelonrevelo/Antigravity/dria-lane-constraint",
+      "web": 7400,
+      "repins_shared_state": true,
+      "builder": "grok",
+      "prompt_file": ".parcel-prompt.md",
+      "done_when": "test -f docs/OVERLAY.md && test -f scripts/overlay-constraint.sh && rg -n 'WDA_EXCLUDEFROMCAPTURE|CGSSetSymbolicHotKey|floating' scripts/overlay-constraint.sh docs/OVERLAY.md"
+    },
+    {
+      "name": "overlay",
+      "item": ["AN1", "AN2", "AN5"],
+      "owns_file": [
+        "dria/OverlayPanel.swift",
+        "dria/driaApp.swift",
+        "dria/Views/Settings/CustomizationTab.swift"
+      ],
+      "forbidden_file": [
+        "docs/OVERLAY.md",
+        "scripts/overlay-constraint.sh",
+        "dria/Services/HotkeyService.swift",
+        "dria/Views/Settings/GeneralSettingsTab.swift"
+      ],
+      "worktree": "/Users/angelonrevelo/Antigravity/dria-lane-overlay",
+      "web": 7410,
+      "repins_shared_state": false,
+      "builder": "grok",
+      "prompt_file": ".parcel-prompt.md",
+      "done_when": "bash scripts/overlay-constraint.sh"
+    },
+    {
+      "name": "hotkey",
+      "item": ["AN4"],
+      "owns_file": [
+        "dria/Services/HotkeyService.swift",
+        "dria/Views/Settings/GeneralSettingsTab.swift"
+      ],
+      "forbidden_file": [
+        "docs/OVERLAY.md",
+        "scripts/overlay-constraint.sh",
+        "dria/OverlayPanel.swift",
+        "dria/driaApp.swift",
+        "dria/Views/Settings/CustomizationTab.swift"
+      ],
+      "worktree": "/Users/angelonrevelo/Antigravity/dria-lane-hotkey",
+      "web": 7420,
+      "repins_shared_state": false,
+      "builder": "grok",
+      "prompt_file": ".parcel-prompt.md",
+      "done_when": "rg -n hideOverlay dria/Services/HotkeyService.swift dria/Views/Settings/GeneralSettingsTab.swift && ! grep -F 'let mods = UInt32(cmdKey | optionKey)' dria/Services/HotkeyService.swift"
+    }
+  ]
+}

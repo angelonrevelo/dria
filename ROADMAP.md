@@ -6,6 +6,23 @@ Ordering: value/effort, security-first.
 
 ---
 
+## Absorb NotesView overlay (macOS) — parcelled
+
+Spec + acceptance: [docs/ABSORB.md](docs/ABSORB.md). **dria absorbs NotesView**, not the reverse. LockDown Browser / unlockdown research is constraint (window level, no exclude-from-capture, no AAC punch-through), not a cheat-client feature.
+
+| ID | Item | Status |
+|---|---|---|
+| AN1 | `OverlayPanel`: floating (not statusBar), edge sliver, join spaces + fullscreen auxiliary | expected-red |
+| AN2 | Gear flashes in-panel settings; clipboard short-answer banner on the panel | expected-red |
+| AN3 | `scripts/overlay-constraint.sh` encodes LDB findings | expected-red |
+| AN4 | Hotkeys hide / copy-answer / toggle overlay; per-binding modifiers; default hide ⌥⇧N | expected-red |
+| AN5 | Customization: Pin, Click-through (no new capture-hide control) | expected-red |
+| AN6 | `docs/OVERLAY.md` cites unlockdown | expected-red |
+
+Not in this tier: AAC bypass, exclude-from-capture, process-name spoof, keeping NotesView as a second app, Windows overlay vs LDB layered-HWND kill.
+
+---
+
 ## Sprint 1 — bridge security (target v1.7.6)
 
 Three real bugs in the new `LLMBridgeServer`. ~7h total.

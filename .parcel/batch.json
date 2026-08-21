@@ -1,0 +1,4 @@
+{
+  "tier": "absorb-notesview",
+  "lane": ["constraint", "overlay", "hotkey"]
+}

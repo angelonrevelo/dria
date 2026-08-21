@@ -1,0 +1,52 @@
+{
+  "lane": [
+    {
+      "name": "constraint",
+      "worktree": "/Users/angelonrevelo/Antigravity/dria-lane-constraint",
+      "builder": "grok",
+      "prompt_file": ".parcel-prompt.md"
+    },
+    {
+      "name": "overlay",
+      "worktree": "/Users/angelonrevelo/Antigravity/dria-lane-overlay",
+      "builder": "grok",
+      "prompt_file": ".parcel-prompt.md"
+    },
+    {
+      "name": "hotkey",
+      "worktree": "/Users/angelonrevelo/Antigravity/dria-lane-hotkey",
+      "builder": "grok",
+      "prompt_file": ".parcel-prompt.md"
+    }
+  ],
+  "config": {
+    "name": "parcel-absorb",
+    "windows": [
+      {
+        "tabs": [
+          {
+            "title": "constraint",
+            "layout": {
+              "cwd": "/Users/angelonrevelo/Antigravity/dria-lane-constraint",
+              "commands": [{ "exec": "grok --permission-mode bypassPermissions --always-approve \"$(cat .parcel-prompt.md)\"" }]
+            }
+          },
+          {
+            "title": "overlay",
+            "layout": {
+              "cwd": "/Users/angelonrevelo/Antigravity/dria-lane-overlay",
+              "commands": [{ "exec": "grok --permission-mode bypassPermissions --always-approve \"$(cat .parcel-prompt.md)\"" }]
+            }
+          },
+          {
+            "title": "hotkey",
+            "layout": {
+              "cwd": "/Users/angelonrevelo/Antigravity/dria-lane-hotkey",
+              "commands": [{ "exec": "grok --permission-mode bypassPermissions --always-approve \"$(cat .parcel-prompt.md)\"" }]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
