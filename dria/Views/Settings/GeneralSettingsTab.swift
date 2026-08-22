@@ -17,7 +17,10 @@ struct GeneralSettingsTab: View {
         hotkeyConfig.inlineChat != initialConfig.inlineChat ||
         hotkeyConfig.cycleMode != initialConfig.cycleMode ||
         hotkeyConfig.abort != initialConfig.abort ||
-        hotkeyConfig.askExcelCell != initialConfig.askExcelCell
+        hotkeyConfig.askExcelCell != initialConfig.askExcelCell ||
+        hotkeyConfig.hideOverlay != initialConfig.hideOverlay ||
+        hotkeyConfig.copyAnswer != initialConfig.copyAnswer ||
+        hotkeyConfig.toggleOverlay != initialConfig.toggleOverlay
     }
 
     var body: some View {
@@ -130,21 +133,25 @@ struct GeneralSettingsTab: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
 
-            Section("Shortcuts (⌘⌥ + key)") {
+            Section("Shortcuts") {
                 ShortcutRow(label: "Capture screen", binding: $hotkeyConfig.capture)
                 ShortcutRow(label: "Send to AI", binding: $hotkeyConfig.sendToAI)
                 ShortcutRow(label: "Inline chat", binding: $hotkeyConfig.inlineChat)
                 ShortcutRow(label: "Cycle mode", binding: $hotkeyConfig.cycleMode)
                 ShortcutRow(label: "Cancel", binding: $hotkeyConfig.abort)
                 ShortcutRow(label: "Ask Excel cell (write answer below)", binding: $hotkeyConfig.askExcelCell)
+                ShortcutRow(label: "Hide overlay", binding: $hotkeyConfig.hideOverlay)
+                ShortcutRow(label: "Copy answer", binding: $hotkeyConfig.copyAnswer)
+                ShortcutRow(label: "Toggle overlay", binding: $hotkeyConfig.toggleOverlay)
 
                 Button("Apply Changes") {
                     hotkeyConfig.save()
+                    initialConfig = hotkeyConfig
                     appState.hotkey.reloadBindings()
                 }
                 .disabled(!shortcutsChanged)
 
-                Text("All shortcuts use ⌘⌥ (Command+Option) as modifier.")
+                Text("Each shortcut stores its own modifiers. Hide overlay defaults to ⌥⇧N (not keys 1–9 — LDB CGS hotkeys_blocked). Copy answer uses the Click-to-copy mode.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 
@@ -371,11 +378,49 @@ private struct ShortcutRow: View {
     let label: String
     @Binding var binding: HotkeyBinding
 
-    var body: some View {
-        Picker(label, selection: $binding) {
-            ForEach(HotkeyBinding.allOptions, id: \.keyCode) { option in
-                Text(option.displayName).tag(option)
+    private var modifierBinding: Binding<UInt32> {
+        Binding(
+            get: { binding.modifier },
+            set: { binding = binding.with(modifier: $0) }
+        )
+    }
+
+    private var keyBinding: Binding<UInt32> {
+        Binding(
+            get: { binding.keyCode },
+            set: { newCode in
+                let match = HotkeyBinding.keyChoice.first { $0.keyCode == newCode }
+                binding = binding.with(keyCode: newCode, label: match?.label ?? binding.label)
             }
+        )
+    }
+
+    private var modifierChoice: [HotkeyBinding.ModifierChoice] {
+        var choice = HotkeyBinding.modifierChoice
+        if !choice.contains(where: { $0.flag == binding.modifier }) {
+            choice.append(.init(flag: binding.modifier, label: binding.modifierLabel))
+        }
+        return choice
+    }
+
+    var body: some View {
+        HStack {
+            Text(label)
+            Spacer()
+            Picker("Modifier", selection: modifierBinding) {
+                ForEach(modifierChoice, id: \.flag) { option in
+                    Text(option.label).tag(option.flag)
+                }
+            }
+            .labelsHidden()
+            .frame(width: 78)
+            Picker("Key", selection: keyBinding) {
+                ForEach(HotkeyBinding.keyChoice, id: \.keyCode) { option in
+                    Text(option.label).tag(option.keyCode)
+                }
+            }
+            .labelsHidden()
+            .frame(width: 72)
         }
     }
 }

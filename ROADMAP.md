@@ -15,7 +15,7 @@ Spec + acceptance: [docs/ABSORB.md](docs/ABSORB.md). **dria absorbs NotesView**,
 | AN1 | `OverlayPanel`: floating (not statusBar), edge sliver, join spaces + fullscreen auxiliary | expected-red |
 | AN2 | Gear flashes in-panel settings; clipboard short-answer banner on the panel | expected-red |
 | AN3 | `scripts/overlay-constraint.sh` encodes LDB findings | expected-red |
-| AN4 | Hotkeys hide / copy-answer / toggle overlay; per-binding modifiers; default hide ⌥⇧N | expected-red |
+| AN4 | Hotkeys hide / copy-answer / toggle overlay; per-binding modifiers; default hide ⌥⇧N | done — `rg -n hideOverlay dria/Services/HotkeyService.swift dria/Views/Settings/GeneralSettingsTab.swift && ! grep -F 'let mods = UInt32(cmdKey \| optionKey)' dria/Services/HotkeyService.swift` |
 | AN5 | Customization: Pin, Click-through (no new capture-hide control) | expected-red |
 | AN6 | `docs/OVERLAY.md` cites unlockdown | expected-red |
 
