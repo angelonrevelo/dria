@@ -157,6 +157,22 @@ final class AppState {
         didSet { UserDefaults.standard.set(copyMode, forKey: "copyMode") }
     }
 
+    /// Overlay pin: floating level over other windows. Off = normal level.
+    var isPinned: Bool = true {
+        didSet {
+            UserDefaults.standard.set(isPinned, forKey: "isPinned")
+            onOverlaySettingChange?()
+        }
+    }
+
+    /// Overlay click-through: ignoresMouseEvents so clicks reach the window below.
+    var isClickThrough: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isClickThrough, forKey: "isClickThrough")
+            onOverlaySettingChange?()
+        }
+    }
+
     /// Local HTTP bridge on 127.0.0.1:7842 for Excel add-in and other integrations.
     var bridgeEnabled: Bool = false {
         didSet {
@@ -190,6 +206,7 @@ final class AppState {
     var onModeChanged: ((StudyMode) -> Void)?
     var onAbort: (() -> Void)?
     var onAITaskStarted: ((Task<Void, Never>) -> Void)?
+    var onOverlaySettingChange: (() -> Void)?
 
     // MARK: - Computed
     var hasAPIKey: Bool {
@@ -334,6 +351,8 @@ final class AppState {
         audioSource = AudioSource(rawValue: UserDefaults.standard.string(forKey: "audioSource") ?? "Microphone") ?? .mic
         voice.audioSource = audioSource
         copyMode = UserDefaults.standard.string(forKey: "copyMode") ?? "short"
+        isPinned = UserDefaults.standard.object(forKey: "isPinned") as? Bool ?? true
+        isClickThrough = UserDefaults.standard.bool(forKey: "isClickThrough")
         bridgeEnabled = UserDefaults.standard.bool(forKey: "bridgeEnabled")
 
         aiProvider = UserDefaults.standard.string(forKey: "aiProvider") ?? "googleai"

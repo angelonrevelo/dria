@@ -66,6 +66,15 @@ struct CustomizationTab: View {
                 .pickerStyle(.radioGroup)
             }
 
+            Section("Overlay") {
+                Toggle("Pin on top", isOn: $state.isPinned)
+                Text("Floating level over other windows. Off drops to normal.")
+                    .font(.caption).foregroundStyle(.secondary)
+                Toggle("Click-through", isOn: $state.isClickThrough)
+                Text("Clicks pass through the panel to the window below.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+
             Section("Safety") {
                 Toggle("Lock chat window", isOn: $state.lockPopover)
                 Text("Prevents accidental popover. Use ⌘⌥3 for inline chat.")

@@ -12,11 +12,11 @@ Spec + acceptance: [docs/ABSORB.md](docs/ABSORB.md). **dria absorbs NotesView**,
 
 | ID | Item | Status |
 |---|---|---|
-| AN1 | `OverlayPanel`: floating (not statusBar), edge sliver, join spaces + fullscreen auxiliary | expected-red |
-| AN2 | Gear flashes in-panel settings; clipboard short-answer banner on the panel | expected-red |
+| AN1 | `OverlayPanel`: floating (not statusBar), edge sliver, join spaces + fullscreen auxiliary | done — `bash scripts/overlay-constraint.sh` |
+| AN2 | Gear flashes in-panel settings; clipboard short-answer banner on the panel | done — `bash scripts/overlay-constraint.sh` |
 | AN3 | `scripts/overlay-constraint.sh` encodes LDB findings | done — `test -f docs/OVERLAY.md && test -f scripts/overlay-constraint.sh && rg -n 'WDA_EXCLUDEFROMCAPTURE\|CGSSetSymbolicHotKey\|floating' scripts/overlay-constraint.sh docs/OVERLAY.md` (`bash scripts/overlay-constraint.sh` stays RED until OverlayPanel exists) |
 | AN4 | Hotkeys hide / copy-answer / toggle overlay; per-binding modifiers; default hide ⌥⇧N | expected-red |
-| AN5 | Customization: Pin, Click-through (no new capture-hide control) | expected-red |
+| AN5 | Customization: Pin, Click-through (no new capture-hide control) | done — `bash scripts/overlay-constraint.sh` |
 | AN6 | `docs/OVERLAY.md` cites unlockdown | done — `test -f docs/OVERLAY.md && test -f scripts/overlay-constraint.sh && rg -n 'WDA_EXCLUDEFROMCAPTURE\|CGSSetSymbolicHotKey\|floating' scripts/overlay-constraint.sh docs/OVERLAY.md` |
 
 Not in this tier: AAC bypass, exclude-from-capture, process-name spoof, keeping NotesView as a second app, Windows overlay vs LDB layered-HWND kill.
