@@ -529,8 +529,10 @@ final class AppState {
         clipboard.detector.sensitivity = DetectionSensitivity(rawValue: detectionSensitivity) ?? .normal
         clipboard.alwaysAnswer = answerAnyClipboard && answerCardEnabled
 
-        // Start monitoring after 5s delay if user had it enabled — avoids TCC crash at startup
-        if autoMonitorClipboard {
+        // Start monitoring after 5s delay if the user had it enabled OR the answer
+        // card is on (the card needs a live clipboard watch). 5s avoids a TCC crash
+        // at startup.
+        if autoMonitorClipboard || answerCardEnabled {
             DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
                 self?.clipboard.startMonitoring()
             }
@@ -663,10 +665,20 @@ final class AppState {
         AnalyticsService.shared.track(.modeSwitch)
     }
 
-    /// Toggle the cursor answer card on/off (⌥⇧O). Also drives clipboard.alwaysAnswer.
+    /// Toggle the cursor answer card on/off (⌥⇧O). Enabling also guarantees the
+    /// clipboard is being watched persistently — otherwise the card never fires.
     func toggleAnswerCard() {
         answerCardEnabled.toggle()
-        onMarqueeUpdate?("⚙️ Answer card \(answerCardEnabled ? "ON" : "OFF")")
+        if answerCardEnabled {
+            smartDetectionEnabled = true
+            if !clipboard.isMonitoring {
+                autoMonitorClipboard = true       // persist the choice
+                clipboard.startMonitoring()       // start now, idempotent
+            }
+            onMarqueeUpdate?("⚙️ Answer card ON — watching clipboard")
+        } else {
+            onMarqueeUpdate?("⚙️ Answer card OFF")
+        }
     }
 
     /// Toggle the menu-bar marquee on/off (⌥⇧N). Answers still reach card + chat.
