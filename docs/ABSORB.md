@@ -1,5 +1,7 @@
 # Absorb NotesView overlay into dria
 
+> **Status: superseded.** The `OverlayPanel` specced here was built (AN1–AN6) then removed from the runtime in favor of the cursor-following `AnswerCard`. This spec is kept for history; the shipped feature is the labeled, opacity-controlled AnswerCard, not the edge-sliver overlay. See [../ROADMAP.md](../ROADMAP.md).
+
 **Direction:** dria absorbs NotesView. NotesView is a prototype; dria is the product.
 
 NotesView (`/tmp/ldbcheat` → `/Applications/NotesView.app`) proved a floating panel that pins over browsers, click-throughs, hides on ⌥⇧N, and flashes settings on the panel. Clipboard watch already exists in dria (`ClipboardService`, `QuestionDetector`, `copyMode`). Do not port a second clipboard stack.

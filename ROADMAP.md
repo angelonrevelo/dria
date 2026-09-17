@@ -6,7 +6,9 @@ Ordering: value/effort, security-first.
 
 ---
 
-## Absorb NotesView overlay (macOS) — parcelled
+## Absorb NotesView overlay (macOS) — SUPERSEDED
+
+> **Superseded by the cursor-following Answer card.** The edge-sliver `OverlayPanel` built in this tier (AN1–AN6) was removed from the runtime: it covered the answer card, ignored the opacity setting, and its auto-show dominated the screen. Its role (⌘⌥3 inline ask, post-capture prompt) is now a compact inline field near the menu-bar icon, and the copied-question answer surfaces in the labeled, opacity-controlled `AnswerCard` instead. `OverlayPanel.swift` remains in the tree but is no longer instantiated; the unlockdown-tied window-level constraints do not apply to the AnswerCard, which is a normal, capturable, labeled floating window. See [docs/OVERLAY.md](docs/OVERLAY.md).
 
 Spec + acceptance: [docs/ABSORB.md](docs/ABSORB.md). **dria absorbs NotesView**, not the reverse. LockDown Browser / unlockdown research is constraint (window level, no exclude-from-capture, no AAC punch-through), not a cheat-client feature.
 

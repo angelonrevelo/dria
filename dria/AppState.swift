@@ -32,6 +32,15 @@ private func extractShortAnswer(_ text: String) -> String {
     return String(first.prefix(80))
 }
 
+/// Everything after the "---" separator; the whole text when there is none.
+private func extractExplanation(_ text: String) -> String {
+    let lines = text.components(separatedBy: "\n")
+    guard let sepIdx = lines.firstIndex(where: { $0.trimmingCharacters(in: .whitespaces) == "---" }) else {
+        return text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    return lines[(sepIdx + 1)...].joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+}
+
 private func stripMarkdown(_ text: String) -> String {
     var s = text
     s = s.replacingOccurrences(of: "***", with: "")
@@ -173,6 +182,53 @@ final class AppState {
         }
     }
 
+    // MARK: - Answer Card (popup next to the cursor on copied questions)
+
+    var answerCardEnabled: Bool = false {
+        didSet {
+            UserDefaults.standard.set(answerCardEnabled, forKey: "answerCardEnabled")
+            clipboard.alwaysAnswer = answerAnyClipboard && answerCardEnabled
+        }
+    }
+    /// Answer ANY copied text, not just text the detector classifies as a question.
+    var answerAnyClipboard: Bool = true {
+        didSet {
+            UserDefaults.standard.set(answerAnyClipboard, forKey: "answerAnyClipboard")
+            clipboard.alwaysAnswer = answerAnyClipboard && answerCardEnabled
+        }
+    }
+    /// Track the cursor until the first click, which pins the card.
+    var answerCardFollowCursor: Bool = true {
+        didSet { UserDefaults.standard.set(answerCardFollowCursor, forKey: "answerCardFollowCursor") }
+    }
+    /// Hide the answer behind a Reveal button so you commit to an answer first.
+    var answerCardRevealFirst: Bool = false {
+        didSet { UserDefaults.standard.set(answerCardRevealFirst, forKey: "answerCardRevealFirst") }
+    }
+    var answerCardShowExplanation: Bool = true {
+        didSet { UserDefaults.standard.set(answerCardShowExplanation, forKey: "answerCardShowExplanation") }
+    }
+    /// Seconds before the card closes itself after the answer arrives. 0 = stay until closed.
+    var answerCardDismissSeconds: Double = 15 {
+        didSet { UserDefaults.standard.set(answerCardDismissSeconds, forKey: "answerCardDismissSeconds") }
+    }
+    var answerCardOpacity: Double = 1.0 {
+        didSet {
+            UserDefaults.standard.set(answerCardOpacity, forKey: "answerCardOpacity")
+            onAnswerCardStyleChange?()
+        }
+    }
+    var answerCardWidth: Double = 340 {
+        didSet {
+            UserDefaults.standard.set(answerCardWidth, forKey: "answerCardWidth")
+            onAnswerCardStyleChange?()
+        }
+    }
+    /// "system", "light", or "dark"
+    var answerCardTheme: String = "system" {
+        didSet { UserDefaults.standard.set(answerCardTheme, forKey: "answerCardTheme") }
+    }
+
     /// Local HTTP bridge on 127.0.0.1:7842 for Excel add-in and other integrations.
     var bridgeEnabled: Bool = false {
         didSet {
@@ -202,6 +258,9 @@ final class AppState {
 
     // MARK: - Callbacks
     var onMarqueeUpdate: ((String?) -> Void)?
+    var onAnswerCard: ((AnswerCardContent) -> Void)?
+    /// Fired when card opacity/width change, so an open card restyles live.
+    var onAnswerCardStyleChange: (() -> Void)?
     var onIconColorChange: ((String) -> Void)? // "red", "yellow", "blue", "green", "reset"
     var onModeChanged: ((StudyMode) -> Void)?
     var onAbort: (() -> Void)?
@@ -353,6 +412,16 @@ final class AppState {
         copyMode = UserDefaults.standard.string(forKey: "copyMode") ?? "short"
         isPinned = UserDefaults.standard.object(forKey: "isPinned") as? Bool ?? true
         isClickThrough = UserDefaults.standard.bool(forKey: "isClickThrough")
+        answerCardEnabled = UserDefaults.standard.bool(forKey: "answerCardEnabled")
+        answerAnyClipboard = UserDefaults.standard.object(forKey: "answerAnyClipboard") as? Bool ?? true
+        answerCardFollowCursor = UserDefaults.standard.object(forKey: "answerCardFollowCursor") as? Bool ?? true
+        answerCardRevealFirst = UserDefaults.standard.bool(forKey: "answerCardRevealFirst")
+        answerCardShowExplanation = UserDefaults.standard.object(forKey: "answerCardShowExplanation") as? Bool ?? true
+        answerCardDismissSeconds = UserDefaults.standard.object(forKey: "answerCardDismissSeconds") as? Double ?? 15
+        let storedCardOpacity = UserDefaults.standard.object(forKey: "answerCardOpacity") as? Double ?? 1.0
+        answerCardOpacity = storedCardOpacity.isFinite ? min(max(storedCardOpacity, 0.05), 1.0) : 1.0
+        answerCardWidth = UserDefaults.standard.object(forKey: "answerCardWidth") as? Double ?? 340
+        answerCardTheme = UserDefaults.standard.string(forKey: "answerCardTheme") ?? "system"
         bridgeEnabled = UserDefaults.standard.bool(forKey: "bridgeEnabled")
 
         aiProvider = UserDefaults.standard.string(forKey: "aiProvider") ?? "googleai"
@@ -442,13 +511,16 @@ final class AppState {
                 }
             }
 
-            // Auto-answer if enabled
-            if self.autoAnswerOnCopy {
-                Task { await self.answerDetectedQuestion(question, rawText: rawText) }
+            // Auto-answer if enabled — the answer card needs an answer to show.
+            // A newer copy supersedes an in-flight one so no copy is dropped.
+            if self.autoAnswerOnCopy || self.answerCardEnabled {
+                self.autoAnswerTask?.cancel()
+                self.autoAnswerTask = Task { await self.answerDetectedQuestion(question, rawText: rawText) }
             }
         }
 
         clipboard.detector.sensitivity = DetectionSensitivity(rawValue: detectionSensitivity) ?? .normal
+        clipboard.alwaysAnswer = answerAnyClipboard && answerCardEnabled
 
         // Start monitoring after 5s delay if user had it enabled — avoids TCC crash at startup
         if autoMonitorClipboard {
@@ -458,17 +530,36 @@ final class AppState {
         }
     }
 
+    /// Tracks the in-flight auto-answer so a newer copy can supersede it.
+    @ObservationIgnored
+    private var autoAnswerTask: Task<Void, Never>?
+
     /// Auto-answer a detected question from clipboard
     func answerDetectedQuestion(_ question: DetectedQuestion, rawText: String) async {
-        guard !isProcessing else { return } // Prevent overlap with manual send
         AnalyticsService.shared.track(.autoAnswer)
         AnalyticsService.shared.track(.clipboardDetection(question.type))
-        guard let gemini = getOrCreateGemini() else { return }
+
+        // Show the card at the cursor the instant a question is detected — before
+        // the AI call — so it always appears, and surfaces a clear error rather
+        // than silently doing nothing when no provider is configured.
+        var card = AnswerCardContent(phase: .loading, typeLabel: question.type.label, stem: question.stem)
+        if answerCardEnabled { onAnswerCard?(card) }
+
+        guard let gemini = getOrCreateGemini() else {
+            if answerCardEnabled {
+                card.phase = .error
+                card.shortAnswer = "No AI provider configured. Add a key in Settings → AI."
+                onAnswerCard?(card)
+            }
+            onMarqueeUpdate?("⚠️ No AI provider configured")
+            return
+        }
 
         isProcessing = true
         onMarqueeUpdate?("🔄 Answering \(question.type.label)...")
 
-        let context = await buildKBContext(for: rawText)?.contextString ?? ""
+        let kbContext = await buildKBContext(for: rawText)
+        let context = kbContext?.contextString ?? ""
 
         var prompt: String
         switch question.type {
@@ -491,16 +582,38 @@ final class AppState {
         do {
             var response = ""
             let stream = gemini.ask(question: prompt, context: context, history: chatHistory)
-            for try await chunk in stream { response += chunk }
+            for try await chunk in stream {
+                if Task.isCancelled { isProcessing = false; return } // superseded by a newer copy
+                response += chunk
+            }
             response = stripMarkdown(response)
 
             let marqueeText = extractShortAnswer(response)
             onMarqueeUpdate?(marqueeText.isEmpty ? "⚠️ Empty response" : "\(question.type.label): \(marqueeText)")
+            if answerCardEnabled {
+                var answered = card
+                answered.phase = marqueeText.isEmpty ? .error : .answer
+                answered.shortAnswer = marqueeText.isEmpty ? "Empty response" : marqueeText
+                answered.explanation = extractExplanation(response)
+                answered.source = kbContext?.sourceFiles ?? []
+                if let top = kbContext?.relevantChunks.first {
+                    answered.passage = String(top.content.trimmingCharacters(in: .whitespacesAndNewlines).prefix(220))
+                }
+                onAnswerCard?(answered)
+            }
 
             chatHistory.append(ChatMessage(role: .assistant, content: response))
             AnalyticsService.shared.track(.responseReceived(charCount: response.count))
         } catch {
+            // A superseded task cancels mid-stream — stay silent, the newer card wins.
+            if Task.isCancelled || error is CancellationError { isProcessing = false; return }
             onMarqueeUpdate?("⚠️ \(error.localizedDescription)")
+            if answerCardEnabled {
+                var failed = card
+                failed.phase = .error
+                failed.shortAnswer = error.localizedDescription
+                onAnswerCard?(failed)
+            }
             AnalyticsService.shared.track(.aiError)
         }
 

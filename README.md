@@ -33,7 +33,8 @@ A stealth AI study assistant for **macOS** and **Windows**. Capture your screen,
 - **Desktop audio capture** — transcribe lectures/videos (Mic / Desktop / Both)
 - **Area selection capture** — select just the question (like ⌘⇧4 / Snipping Tool)
 - **Smart clipboard detection** — auto-detects MC, T/F, ID, Essay (3 sensitivity modes)
-- **Auto-answer on copy** — detected questions sent to AI immediately
+- **Auto-answer on copy** — detected questions sent to AI immediately; optional "answer anything I copy" to skip detection and answer every copy
+- **Answer card** — a floating card pops up next to the cursor when you copy, showing the short answer, explanation, and the source note it drew from. Follows the cursor until you click to pin; adjustable opacity (5–100%), width, theme, auto-close, and an optional "answer first, then reveal" mode. Copying again supersedes an in-flight answer.
 - **Two-tier answers** — short answer in overlay/marquee, full explanation in chat
 - **Practice mode** — AI generates exam questions from your materials
 - **Flashcard generator** — tap-to-flip study cards from knowledge base

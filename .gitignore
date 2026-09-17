@@ -35,3 +35,4 @@ sa-key.json
 apikey.txt
 *.dmg
 dist/
+.opencode/

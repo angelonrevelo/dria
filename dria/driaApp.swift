@@ -25,10 +25,10 @@ struct driaApp: App {
 }
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSTextFieldDelegate {
     let appState = AppState()
     private var statusItem: NSStatusItem!
-    private var popover: NSPopover!
+    private var popover: PopoverPanelController!
 
     // Marquee
     private var marqueeTimer: Timer?
@@ -40,9 +40,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var isMarqueeAnswer = false
     private var autoDismissTimer: Timer?
 
-    // Floating overlay panel (edge sliver). Inline ask lives on the panel.
-    private var overlayPanel: OverlayPanel?
+    // Compact inline ask field near the menu-bar icon (⌘⌥3 / after capture).
+    private var inputPanel: NSPanel?
+    private var inputField: NSTextField?
     private var isTypingInline = false
+
+    private lazy var answerCard = AnswerCardController(appState: appState)
 
     // Current AI task for abort
     private var currentAITask: Task<Void, Never>?
@@ -50,10 +53,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         appState.hangWatchdog.start()
 
-        popover = NSPopover()
-        popover.contentSize = NSSize(width: 420, height: 560)
-        popover.behavior = .transient
-        popover.contentViewController = NSHostingController(
+        popover = PopoverPanelController(
             rootView: PopoverView()
                 .environment(appState)
         )
@@ -90,11 +90,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self.setIconColor(.systemGreen)
                 self.resetIconColorAfter(2)
             } else {
-                // AI answer — show in marquee + overlay banner + green icon
+                // AI answer — show in marquee + green icon (card shows the rest)
                 self.setIconColor(.systemGreen)
                 self.startMarquee(text)
-                self.overlayPanel?.showClipBanner(text)
             }
+        }
+
+        appState.onAnswerCard = { [weak self] content in
+            self?.answerCard.show(content)
+        }
+
+        appState.onAnswerCardStyleChange = { [weak self] in
+            self?.answerCard.applyLiveStyle()
         }
 
         appState.onModeChanged = { [weak self] mode in
@@ -124,12 +131,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         appState.onAITaskStarted = { [weak self] task in
             self?.currentAITask = task
         }
-
-        appState.onOverlaySettingChange = { [weak self] in
-            self?.overlayPanel?.applyOverlaySetting()
-        }
-
-        showOverlayPanel()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -139,8 +140,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         iconColorTimer?.invalidate()
         currentAITask?.cancel()
         hideInlineInput()
-        overlayPanel?.orderOut(nil)
-        overlayPanel = nil
+        answerCard.hide()
         appState.cleanup()
     }
 
@@ -156,40 +156,77 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         resetIconColorAfter(2)
     }
 
-    // MARK: - Overlay + inline ask (⌘⌥3)
+    // MARK: - Inline ask (⌘⌥3 / after capture)
 
-    private func showOverlayPanel() {
-        let panel = OverlayPanel(appState: appState)
-        panel.onAskSubmitted = { [weak self] question in
-            self?.submitInlineAsk(question)
-        }
-        panel.onAskResigned = { [weak self] in
-            self?.isTypingInline = false
-        }
-        panel.onCopyBanner = { [weak self] in
-            self?.copyOverlayAnswer()
-        }
-        panel.orderFrontRegardless()
-        overlayPanel = panel
-    }
-
+    /// A small text field anchored under the menu-bar icon — no large overlay.
     private func showInlineInput() {
-        if overlayPanel == nil {
-            showOverlayPanel()
-        }
-        guard let overlayPanel else { return }
-        if overlayPanel.isAskFocused {
-            hideInlineInput()
-            return
-        }
+        if isTypingInline { hideInlineInput(); return }
         stopMarquee()
         isTypingInline = true
-        overlayPanel.focusAsk()
+
+        guard let button = statusItem.button, let buttonWindow = button.window else { return }
+        let rect = buttonWindow.frame
+        let w: CGFloat = 400, h: CGFloat = 36
+        let panel = NSPanel(
+            contentRect: NSRect(x: rect.midX - w / 2, y: rect.minY - h - 4, width: w, height: h),
+            styleMask: [.nonactivatingPanel, .fullSizeContentView],
+            backing: .buffered, defer: false
+        )
+        panel.isFloatingPanel = true
+        panel.level = .popUpMenu
+        panel.titleVisibility = .hidden
+        panel.titlebarAppearsTransparent = true
+        panel.backgroundColor = .clear
+        panel.isOpaque = false
+        panel.hasShadow = true
+
+        let field = NSTextField(frame: NSRect(x: 8, y: 6, width: w - 16, height: 24))
+        field.placeholderString = appState.capturedImage != nil
+            ? "📸 Screenshot ready — type a question, Enter to send"
+            : "Ask dria (\(appState.activeMode.name))… Enter=send  Esc=close"
+        field.font = .systemFont(ofSize: 13)
+        field.isBezeled = true
+        field.bezelStyle = .roundedBezel
+        field.focusRingType = .none
+        field.delegate = self
+        field.target = self
+        field.action = #selector(inlineFieldSubmitted)
+
+        let container = NSVisualEffectView(frame: NSRect(x: 0, y: 0, width: w, height: h))
+        container.material = .hudWindow
+        container.blendingMode = .behindWindow
+        container.state = .active
+        container.wantsLayer = true
+        container.layer?.cornerRadius = 10
+        container.addSubview(field)
+        panel.contentView = container
+        panel.makeKeyAndOrderFront(nil)
+
+        inputPanel = panel
+        inputField = field
+        NSApp.activate(ignoringOtherApps: true)
+        panel.makeFirstResponder(field)
     }
 
     private func hideInlineInput() {
-        overlayPanel?.resignAsk()
+        inputPanel?.orderOut(nil)
+        inputPanel = nil
+        inputField = nil
         isTypingInline = false
+    }
+
+    @objc private func inlineFieldSubmitted() {
+        guard let text = inputField?.stringValue, !text.isEmpty else { hideInlineInput(); return }
+        hideInlineInput()
+        submitInlineAsk(text)
+    }
+
+    func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+        if commandSelector == #selector(NSResponder.cancelOperation(_:)) {
+            hideInlineInput()
+            return true
+        }
+        return false
     }
 
     private func submitInlineAsk(_ question: String) {
@@ -227,7 +264,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         appState.clipboard.skipNextChange = true
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(clean, forType: .string)
-        overlayPanel?.flashSetting("Copied")
     }
 
     // MARK: - Toggle Popover
@@ -236,12 +272,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if appState.lockPopover { return }
 
         guard let button = statusItem.button else { return }
-        if popover.isShown {
-            popover.performClose(nil)
-        } else {
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-            NSApp.activate(ignoringOtherApps: true)
-        }
+        popover.toggle(relativeTo: button)
     }
 
     @objc func statusItemClicked() {

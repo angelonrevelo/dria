@@ -57,6 +57,65 @@ struct CustomizationTab: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
 
+            Section("Answer Card") {
+                Toggle("Show answer card next to the cursor", isOn: $state.answerCardEnabled)
+                Text("When clipboard watching detects a copied question, a card with the answer, explanation and source pops up by the cursor.")
+                    .font(.caption).foregroundStyle(.secondary)
+
+                if state.answerCardEnabled && (!state.autoMonitorClipboard || !state.smartDetectionEnabled) {
+                    Button("Enable clipboard watching and question detection") {
+                        state.smartDetectionEnabled = true
+                        if !state.autoMonitorClipboard { state.toggleClipboardMonitoring() }
+                    }
+                    Text("Copied questions are sent to your selected AI provider. Use with your practice material outside restricted assessments.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+
+                Group {
+                    Toggle("Answer anything I copy", isOn: $state.answerAnyClipboard)
+                    Text("On: every copy is answered. Off: only text detected as a question.")
+                        .font(.caption).foregroundStyle(.secondary)
+
+                    Toggle("Follow cursor (click anywhere to pin)", isOn: $state.answerCardFollowCursor)
+                    Toggle("Answer first, then reveal", isOn: $state.answerCardRevealFirst)
+                    Toggle("Show explanation", isOn: $state.answerCardShowExplanation)
+
+                    HStack {
+                        Text("Opacity")
+                        Slider(value: $state.answerCardOpacity, in: 0.05...1.0, step: 0.01)
+                        Text("\(Int((state.answerCardOpacity * 100).rounded()))%")
+                            .font(.caption).monospacedDigit()
+                            .frame(width: 35)
+                    }
+
+                    HStack {
+                        Text("Width")
+                        Slider(value: $state.answerCardWidth, in: 260...520, step: 20)
+                        Text("\(Int(state.answerCardWidth))")
+                            .font(.caption).monospacedDigit()
+                            .frame(width: 30)
+                    }
+
+                    Picker("Close after", selection: $state.answerCardDismissSeconds) {
+                        Text("5 s").tag(5.0)
+                        Text("15 s").tag(15.0)
+                        Text("30 s").tag(30.0)
+                        Text("60 s").tag(60.0)
+                        Text("Never").tag(0.0)
+                    }
+                    Text("Pinning a card keeps it open.")
+                        .font(.caption).foregroundStyle(.secondary)
+
+                    Picker("Theme", selection: $state.answerCardTheme) {
+                        Text("System").tag("system")
+                        Text("Light").tag("light")
+                        Text("Dark").tag("dark")
+                    }
+                    .pickerStyle(.segmented)
+                }
+                .disabled(!state.answerCardEnabled)
+            }
+
             Section("Click to Copy") {
                 Picker("When clicking the icon, copy:", selection: $state.copyMode) {
                     Text("Short answer only").tag("short")
@@ -64,15 +123,6 @@ struct CustomizationTab: View {
                     Text("Marquee text (what's scrolling)").tag("marquee")
                 }
                 .pickerStyle(.radioGroup)
-            }
-
-            Section("Overlay") {
-                Toggle("Pin on top", isOn: $state.isPinned)
-                Text("Floating level over other windows. Off drops to normal.")
-                    .font(.caption).foregroundStyle(.secondary)
-                Toggle("Click-through", isOn: $state.isClickThrough)
-                Text("Clicks pass through the panel to the window below.")
-                    .font(.caption).foregroundStyle(.secondary)
             }
 
             Section("Safety") {

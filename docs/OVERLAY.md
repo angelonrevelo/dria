@@ -1,5 +1,7 @@
 # Overlay rules (macOS)
 
+> **Status: superseded.** The `OverlayPanel` these rules govern was removed from the runtime in favor of the cursor-following `AnswerCard` (see [../ROADMAP.md](../ROADMAP.md)). This document is retained as the design record for `OverlayPanel.swift`, which is no longer instantiated. The AnswerCard is a normal, capturable, labeled floating window and does not implement these unlockdown-derived constraints.
+
 LockDown Browser / unlockdown research is **constraint**, not a feature. `OverlayPanel` must satisfy these rules. AAC punch-through is out of scope.
 
 NotesView (`/tmp/ldbcheat`) is reference-only. Port behavior into `OverlayPanel`; do not keep NotesView.app.

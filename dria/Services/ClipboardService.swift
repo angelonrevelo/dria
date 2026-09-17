@@ -15,6 +15,10 @@ final class ClipboardService {
     /// Set to true before writing to clipboard programmatically — skips next detection
     var skipNextChange: Bool = false
 
+    /// When true, any copied text that the detector does not classify as a question
+    /// is still forwarded as an `.unknown` question, so "copy anything" works.
+    var alwaysAnswer: Bool = false
+
     var onQuestionDetected: ((DetectedQuestion, String) -> Void)?
 
     func startMonitoring() {
@@ -40,6 +44,14 @@ final class ClipboardService {
             if let question = self.detector.detect(from: text),
                question.confidence >= self.detector.sensitivity.minConfidence {
                 self.onQuestionDetected?(question, text)
+            } else if self.alwaysAnswer {
+                // Fallback: answer any copied text, not just detected questions.
+                // Skip trivially short copies and file paths (handled elsewhere).
+                let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                let isFilePath = trimmed.hasPrefix("/") || trimmed.hasPrefix("file://") || trimmed.hasPrefix("~")
+                guard trimmed.count >= 3, !isFilePath else { return }
+                let unknown = DetectedQuestion(type: .unknown, stem: trimmed, options: [], rawText: text, confidence: 1.0)
+                self.onQuestionDetected?(unknown, text)
             }
         }
     }
