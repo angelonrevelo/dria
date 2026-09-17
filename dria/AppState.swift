@@ -762,7 +762,30 @@ final class AppState {
                 await self?.handleAskExcelCell()
             }
         }
+        hotkey.onCopyAnswer = { [weak self] in
+            self?.copyAnswerToClipboard()
+        }
         hotkey.register()
+    }
+
+    /// Copy last answer using `copyMode` (short / full / marquee). Overlay hide/toggle
+    /// are notifications on `HotkeyService` so OverlayPanel can observe them.
+    func copyAnswerToClipboard() {
+        let full = chatHistory.last(where: { $0.role == .assistant })?.content ?? currentResponse
+        let copyText: String
+        switch copyMode {
+        case "short":
+            copyText = extractShortAnswer(full.isEmpty ? currentResponse : full)
+        case "full":
+            copyText = full
+        default:
+            copyText = currentResponse.isEmpty ? full : currentResponse
+        }
+        let clean = copyText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.isEmpty else { return }
+        clipboard.skipNextChange = true
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(clean, forType: .string)
     }
 
     /// Write a short log entry for every Excel hotkey round-trip. Lets us
