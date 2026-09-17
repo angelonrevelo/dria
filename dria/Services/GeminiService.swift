@@ -426,6 +426,11 @@ final class OpenAICompatibleProvider: Sendable {
          ["google/gemini-2.5-flash", "anthropic/claude-sonnet-4", "openai/gpt-4o", "meta-llama/llama-3.3-70b-instruct"]),
         ("xai", "xAI (Grok)", "https://api.x.ai/v1", "grok-3",
          ["grok-3", "grok-3-mini", "grok-2"]),
+        // DeepSeek is OpenAI-compatible. Base URL takes no /v1 (endpoint is
+        // /chat/completions off the root). deepseek-flash = V4.1-Flash (fast,
+        // cheap — best for the answer card); deepseek-v4-pro = stronger reasoner.
+        ("deepseek", "DeepSeek", "https://api.deepseek.com", "deepseek-flash",
+         ["deepseek-flash", "deepseek-v4-pro"]),
     ]
 
     init(apiKey: String, baseURL: String, modelName: String, providerName: String = "OpenAI") {

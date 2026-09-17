@@ -28,7 +28,7 @@ struct AISettingsTab: View {
                     Text("Google AI (API Key) — Free").tag("googleai")
                     Text("Vertex AI (Service Account)").tag("vertexai")
                     Text("Claude (Anthropic)").tag("claude")
-                    Text("OpenAI / Groq / Mistral / Ollama / OpenRouter / xAI").tag("openai-compatible")
+                    Text("OpenAI / Groq / Mistral / Ollama / OpenRouter / xAI / DeepSeek").tag("openai-compatible")
                 }
                 .pickerStyle(.radioGroup)
                 .onChange(of: appState.aiProvider) {
