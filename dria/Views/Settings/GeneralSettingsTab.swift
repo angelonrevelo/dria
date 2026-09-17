@@ -151,7 +151,7 @@ struct GeneralSettingsTab: View {
                 }
                 .disabled(!shortcutsChanged)
 
-                Text("Each shortcut stores its own modifiers. Toggle marquee defaults to ⌥⇧N, toggle answer card ⌥⇧O, copy answer ⌥⇧C. Copy answer uses the Click-to-copy mode.")
+                Text("Each shortcut stores its own modifiers. Toggle marquee defaults to ⌥⇧< , toggle answer card ⌥⇧> , copy answer ⌥⇧? — keys by the right ⌥. Copy answer uses the Click-to-copy mode.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 

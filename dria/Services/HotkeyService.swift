@@ -61,22 +61,29 @@ struct HotkeyBinding: Codable, Equatable, Hashable {
     static let leftArrow = HotkeyBinding(keyCode: UInt32(kVK_LeftArrow), label: "←")
     static let rightArrow = HotkeyBinding(keyCode: UInt32(kVK_RightArrow), label: "→")
 
+    // Keys clustered by the right ⌥ key — reachable one-handed. Labels show the
+    // shifted glyph since the toggle defaults use ⌥⇧.
+    static let keyComma = HotkeyBinding(keyCode: UInt32(kVK_ANSI_Comma), label: "<")
+    static let keyPeriod = HotkeyBinding(keyCode: UInt32(kVK_ANSI_Period), label: ">")
+    static let keySlash = HotkeyBinding(keyCode: UInt32(kVK_ANSI_Slash), label: "?")
+
     /// NotesView NVHideMod: option+shift+N. Not keys 1–9 — LDB CGS
     /// `hotkey1_enabled`…`hotkey9_enabled` / `hotkeys_blocked`
     /// (`~/Warp/unlockdown/docs/ARCHITECTURE.md`, `docs/DETECTIONS.md`).
+    // Defaults clustered by the right ⌥ key: ⌥⇧< marquee, ⌥⇧> card, ⌥⇧? copy.
     static let hideOverlayDefault = HotkeyBinding(
-        keyCode: UInt32(kVK_ANSI_N),
-        label: "N",
+        keyCode: UInt32(kVK_ANSI_Comma),
+        label: "<",
         modifier: optionShiftModifier
     )
     static let copyAnswerDefault = HotkeyBinding(
-        keyCode: UInt32(kVK_ANSI_C),
-        label: "C",
+        keyCode: UInt32(kVK_ANSI_Slash),
+        label: "?",
         modifier: optionShiftModifier
     )
     static let toggleOverlayDefault = HotkeyBinding(
-        keyCode: UInt32(kVK_ANSI_O),
-        label: "O",
+        keyCode: UInt32(kVK_ANSI_Period),
+        label: ">",
         modifier: optionShiftModifier
     )
 
@@ -85,6 +92,7 @@ struct HotkeyBinding: Codable, Equatable, Hashable {
         .space, .leftArrow, .rightArrow,
         .keyQ, .keyW, .keyE, .keyR, .keyS, .keyD,
         .keyN, .keyC, .keyO, .keyT, .keyH, .keyP,
+        .keyComma, .keyPeriod, .keySlash,
     ]
 
     static let allOptions: [HotkeyBinding] = keyChoice

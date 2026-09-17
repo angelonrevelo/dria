@@ -665,7 +665,7 @@ final class AppState {
         AnalyticsService.shared.track(.modeSwitch)
     }
 
-    /// Toggle the cursor answer card on/off (⌥⇧O). Enabling also guarantees the
+    /// Toggle the cursor answer card on/off (⌥⇧>). Enabling also guarantees the
     /// clipboard is being watched persistently — otherwise the card never fires.
     func toggleAnswerCard() {
         answerCardEnabled.toggle()
@@ -681,7 +681,7 @@ final class AppState {
         }
     }
 
-    /// Toggle the menu-bar marquee on/off (⌥⇧N). Answers still reach card + chat.
+    /// Toggle the menu-bar marquee on/off (⌥⇧<). Answers still reach card + chat.
     func toggleMarquee() {
         marqueeEnabled.toggle()
         onMarqueeUpdate?("⚙️ Marquee \(marqueeEnabled ? "ON" : "OFF")")

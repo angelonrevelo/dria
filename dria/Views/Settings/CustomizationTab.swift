@@ -14,11 +14,11 @@ struct CustomizationTab: View {
         Form {
             Section("Features") {
                 Toggle("Answer card", isOn: $state.answerCardEnabled)
-                Text("Floating card by the cursor when you copy. Shortcut: ⌥⇧O")
+                Text("Floating card by the cursor when you copy. Shortcut: ⌥⇧>")
                     .font(.caption).foregroundStyle(.secondary)
 
                 Toggle("Menu-bar marquee", isOn: $state.marqueeEnabled)
-                Text("Scrolls the answer in the menu bar. Shortcut: ⌥⇧N")
+                Text("Scrolls the answer in the menu bar. Shortcut: ⌥⇧<")
                     .font(.caption).foregroundStyle(.secondary)
 
                 Toggle("Watch clipboard", isOn: Binding(
