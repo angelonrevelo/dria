@@ -140,9 +140,9 @@ struct GeneralSettingsTab: View {
                 ShortcutRow(label: "Cycle mode", binding: $hotkeyConfig.cycleMode)
                 ShortcutRow(label: "Cancel", binding: $hotkeyConfig.abort)
                 ShortcutRow(label: "Ask Excel cell (write answer below)", binding: $hotkeyConfig.askExcelCell)
-                ShortcutRow(label: "Hide overlay", binding: $hotkeyConfig.hideOverlay)
+                ShortcutRow(label: "Toggle menu-bar marquee", binding: $hotkeyConfig.hideOverlay)
+                ShortcutRow(label: "Toggle answer card", binding: $hotkeyConfig.toggleOverlay)
                 ShortcutRow(label: "Copy answer", binding: $hotkeyConfig.copyAnswer)
-                ShortcutRow(label: "Toggle overlay", binding: $hotkeyConfig.toggleOverlay)
 
                 Button("Apply Changes") {
                     hotkeyConfig.save()
@@ -151,7 +151,7 @@ struct GeneralSettingsTab: View {
                 }
                 .disabled(!shortcutsChanged)
 
-                Text("Each shortcut stores its own modifiers. Hide overlay defaults to ⌥⇧N (not keys 1–9 — LDB CGS hotkeys_blocked). Copy answer uses the Click-to-copy mode.")
+                Text("Each shortcut stores its own modifiers. Toggle marquee defaults to ⌥⇧N, toggle answer card ⌥⇧O, copy answer ⌥⇧C. Copy answer uses the Click-to-copy mode.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 

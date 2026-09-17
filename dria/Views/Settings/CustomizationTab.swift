@@ -12,56 +12,28 @@ struct CustomizationTab: View {
         @Bindable var state = appState
 
         Form {
-            Section("Stealth Presets") {
-                HStack(spacing: 12) {
-                    StealthPresetButton(label: "Full", icon: "eye", opacity: 1.0, current: state.marqueeOpacity) {
-                        state.marqueeOpacity = 1.0
-                    }
-                    StealthPresetButton(label: "Subtle", icon: "eye.slash", opacity: 0.5, current: state.marqueeOpacity) {
-                        state.marqueeOpacity = 0.5
-                    }
-                    StealthPresetButton(label: "Faint", icon: "cloud", opacity: 0.25, current: state.marqueeOpacity) {
-                        state.marqueeOpacity = 0.25
-                    }
-                    StealthPresetButton(label: "Ghost", icon: "eye.slash.fill", opacity: 0.1, current: state.marqueeOpacity) {
-                        state.marqueeOpacity = 0.1
-                    }
-                }
-                .padding(.vertical, 4)
-            }
-
-            Section("Text Visibility") {
-                HStack {
-                    Image(systemName: "eye.slash")
-                        .foregroundStyle(.secondary)
-                    Slider(value: $state.marqueeOpacity, in: 0.05...1.0, step: 0.05)
-                    Image(systemName: "eye")
-                        .foregroundStyle(.secondary)
-                }
-                Text("Opacity: \(Int(state.marqueeOpacity * 100))% — \(opacityLabel(state.marqueeOpacity))")
+            Section("Features") {
+                Toggle("Answer card", isOn: $state.answerCardEnabled)
+                Text("Floating card by the cursor when you copy. Shortcut: ⌥⇧O")
                     .font(.caption).foregroundStyle(.secondary)
-            }
 
-            Section("Marquee") {
-                HStack {
-                    Text("Text width")
-                    Slider(value: .init(
-                        get: { Double(state.marqueeWidth) },
-                        set: { state.marqueeWidth = Int($0) }
-                    ), in: 10...50, step: 5)
-                    Text("\(state.marqueeWidth)")
-                        .font(.caption).monospacedDigit()
-                        .frame(width: 25)
-                }
-                Text("Characters visible in menu bar. Smaller = more discreet.")
+                Toggle("Menu-bar marquee", isOn: $state.marqueeEnabled)
+                Text("Scrolls the answer in the menu bar. Shortcut: ⌥⇧N")
+                    .font(.caption).foregroundStyle(.secondary)
+
+                Toggle("Watch clipboard", isOn: Binding(
+                    get: { state.autoMonitorClipboard },
+                    set: { if $0 != state.autoMonitorClipboard { state.toggleClipboardMonitoring() } }
+                ))
+                Text("Detect (and answer) text you copy. Required for the answer card.")
+                    .font(.caption).foregroundStyle(.secondary)
+
+                Toggle("Auto-answer on copy", isOn: $state.autoAnswerOnCopy)
+                Text("Send detected questions to AI automatically.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 
             Section("Answer Card") {
-                Toggle("Show answer card next to the cursor", isOn: $state.answerCardEnabled)
-                Text("When clipboard watching detects a copied question, a card with the answer, explanation and source pops up by the cursor.")
-                    .font(.caption).foregroundStyle(.secondary)
-
                 if state.answerCardEnabled && (!state.autoMonitorClipboard || !state.smartDetectionEnabled) {
                     Button("Enable clipboard watching and question detection") {
                         state.smartDetectionEnabled = true
@@ -115,6 +87,46 @@ struct CustomizationTab: View {
                 }
                 .disabled(!state.answerCardEnabled)
             }
+
+            Section("Menu-bar marquee") {
+                HStack(spacing: 12) {
+                    StealthPresetButton(label: "Full", icon: "eye", opacity: 1.0, current: state.marqueeOpacity) {
+                        state.marqueeOpacity = 1.0
+                    }
+                    StealthPresetButton(label: "Subtle", icon: "eye.slash", opacity: 0.5, current: state.marqueeOpacity) {
+                        state.marqueeOpacity = 0.5
+                    }
+                    StealthPresetButton(label: "Faint", icon: "cloud", opacity: 0.25, current: state.marqueeOpacity) {
+                        state.marqueeOpacity = 0.25
+                    }
+                    StealthPresetButton(label: "Ghost", icon: "eye.slash.fill", opacity: 0.1, current: state.marqueeOpacity) {
+                        state.marqueeOpacity = 0.1
+                    }
+                }
+                .padding(.vertical, 4)
+
+                HStack {
+                    Image(systemName: "eye.slash").foregroundStyle(.secondary)
+                    Slider(value: $state.marqueeOpacity, in: 0.05...1.0, step: 0.05)
+                    Image(systemName: "eye").foregroundStyle(.secondary)
+                }
+                Text("Opacity: \(Int(state.marqueeOpacity * 100))% — \(opacityLabel(state.marqueeOpacity))")
+                    .font(.caption).foregroundStyle(.secondary)
+
+                HStack {
+                    Text("Text width")
+                    Slider(value: .init(
+                        get: { Double(state.marqueeWidth) },
+                        set: { state.marqueeWidth = Int($0) }
+                    ), in: 10...50, step: 5)
+                    Text("\(state.marqueeWidth)")
+                        .font(.caption).monospacedDigit()
+                        .frame(width: 25)
+                }
+                Text("Characters visible in the menu bar. Smaller = more discreet.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            .disabled(!state.marqueeEnabled)
 
             Section("Click to Copy") {
                 Picker("When clicking the icon, copy:", selection: $state.copyMode) {

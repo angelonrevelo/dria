@@ -20,7 +20,7 @@ struct SettingsView: View {
 
             CustomizationTab()
                 .environment(appState)
-                .tabItem { Label("Stealth", systemImage: "eye.slash") }
+                .tabItem { Label("Display", systemImage: "macwindow") }
 
             GeneralSettingsTab()
                 .environment(appState)

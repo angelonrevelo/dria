@@ -89,10 +89,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSTextFieldDelegate {
             } else if text.hasPrefix("✅") || text.hasPrefix("✋") {
                 self.setIconColor(.systemGreen)
                 self.resetIconColorAfter(2)
-            } else {
-                // AI answer — show in marquee + green icon (card shows the rest)
-                self.setIconColor(.systemGreen)
+            } else if text.hasPrefix("⚙️") {
+                // Toggle confirmation — always flash briefly, even if marquee is off.
+                self.setIconColor(.systemGray)
                 self.startMarquee(text)
+                self.resetIconColorAfter(2)
+            } else {
+                // AI answer — green icon; marquee text only if enabled (card/chat
+                // still get the full answer regardless).
+                self.setIconColor(.systemGreen)
+                if self.appState.marqueeEnabled {
+                    self.startMarquee(text)
+                } else {
+                    self.resetIconColorAfter(2)
+                }
             }
         }
 
@@ -385,6 +395,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSTextFieldDelegate {
 
         let isStatus = text.hasPrefix("📸") || text.hasPrefix("⚠️") || text.hasPrefix("🔄")
             || text.hasPrefix("📚") || text.hasPrefix("📋") || text.hasPrefix("✅") || text.hasPrefix("✋")
+            || text.hasPrefix("⚙️")
         isMarqueeAnswer = !isStatus
 
         // Show text immediately

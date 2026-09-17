@@ -134,6 +134,12 @@ final class AppState {
         didSet { UserDefaults.standard.set(marqueeOpacity, forKey: "marqueeOpacity") }
     }
 
+    /// Whether AI answers scroll in the menu bar. Off = answers still go to the
+    /// card + chat, just not the marquee. Toggle hotkey: ⌥⇧N.
+    var marqueeEnabled: Bool = true {
+        didSet { UserDefaults.standard.set(marqueeEnabled, forKey: "marqueeEnabled") }
+    }
+
     /// Hover capture dimensions
     var hoverCaptureWidth: Double = 800 {
         didSet { UserDefaults.standard.set(hoverCaptureWidth, forKey: "hoverCaptureWidth") }
@@ -404,6 +410,7 @@ final class AppState {
         ollamaFallback = UserDefaults.standard.bool(forKey: "ollamaFallback")
         marqueeWidth = UserDefaults.standard.object(forKey: "marqueeWidth") as? Int ?? 30
         marqueeOpacity = UserDefaults.standard.object(forKey: "marqueeOpacity") as? Double ?? 1.0
+        marqueeEnabled = UserDefaults.standard.object(forKey: "marqueeEnabled") as? Bool ?? true
         lockPopover = UserDefaults.standard.bool(forKey: "lockPopover")
         hoverCaptureWidth = UserDefaults.standard.object(forKey: "hoverCaptureWidth") as? Double ?? 800
         hoverCaptureHeight = UserDefaults.standard.object(forKey: "hoverCaptureHeight") as? Double ?? 600
@@ -656,6 +663,18 @@ final class AppState {
         AnalyticsService.shared.track(.modeSwitch)
     }
 
+    /// Toggle the cursor answer card on/off (⌥⇧O). Also drives clipboard.alwaysAnswer.
+    func toggleAnswerCard() {
+        answerCardEnabled.toggle()
+        onMarqueeUpdate?("⚙️ Answer card \(answerCardEnabled ? "ON" : "OFF")")
+    }
+
+    /// Toggle the menu-bar marquee on/off (⌥⇧N). Answers still reach card + chat.
+    func toggleMarquee() {
+        marqueeEnabled.toggle()
+        onMarqueeUpdate?("⚙️ Marquee \(marqueeEnabled ? "ON" : "OFF")")
+    }
+
     func cycleMode() {
         guard modes.count > 1 else { return }
         let currentIndex = modes.firstIndex(where: { $0.id == activeModeId }) ?? 0
@@ -877,6 +896,13 @@ final class AppState {
         }
         hotkey.onCopyAnswer = { [weak self] in
             self?.copyAnswerToClipboard()
+        }
+        // Repurposed from the removed overlay: ⌥⇧N toggles the marquee, ⌥⇧O the card.
+        hotkey.onHideOverlay = { [weak self] in
+            self?.toggleMarquee()
+        }
+        hotkey.onToggleOverlay = { [weak self] in
+            self?.toggleAnswerCard()
         }
         hotkey.register()
     }
