@@ -6,7 +6,7 @@ A stealth AI study assistant for **macOS** and **Windows**. Capture your screen,
 
 | Platform | Download | Notes |
 |----------|----------|-------|
-| **macOS** | [dria-v1.8.2.dmg](https://github.com/CelestialBrain/dria/releases/latest) | Drag to Applications. First launch: right-click → Open |
+| **macOS** | [dria-v1.8.3.dmg](https://github.com/CelestialBrain/dria/releases/latest) | Drag to Applications. First launch: right-click → Open |
 | **Windows** | [dria-v1.0.0-setup.exe](https://github.com/CelestialBrain/dria/releases/tag/desktop-v1.0.0) | Run the installer. No build tools needed |
 | **Windows (.msi)** | [dria-v1.0.0.msi](https://github.com/CelestialBrain/dria/releases/tag/desktop-v1.0.0) | Alternative MSI installer |
 
@@ -68,7 +68,7 @@ All hotkeys configurable in Settings.
 ### macOS
 
 **Install from DMG:**
-1. Download [dria-v1.8.2.dmg](https://github.com/CelestialBrain/dria/releases/latest)
+1. Download [dria-v1.8.3.dmg](https://github.com/CelestialBrain/dria/releases/latest)
 2. Drag `dria.app` to Applications
 3. First launch: right-click → Open (bypasses Gatekeeper)
 4. Settings → AI Model → paste your API key

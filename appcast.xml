@@ -7,6 +7,19 @@
         <language>en</language>
 
         <item>
+            <title>dria v1.8.3</title>
+            <description><![CDATA[<ul>
+                <li><b>Toggle shortcuts.</b> ⌥⇧O toggles the cursor answer card on/off, ⌥⇧N toggles the menu-bar marquee, ⌥⇧C copies the answer. Each shows a quick ⚙️ confirmation and is re-bindable in Settings → General.</li>
+                <li>Enabling the answer card (by hotkey or at launch) now <b>persistently watches the clipboard</b> — previously it only worked if clipboard monitoring was separately on.</li>
+                <li><b>Reorganized settings.</b> The "Stealth" tab is now "Display" with a top Features section (Answer card, Menu-bar marquee, Watch clipboard, Auto-answer — each with its shortcut) and a consolidated marquee section.</li>
+                <li><b>DeepSeek provider.</b> Added as a built-in preset (deepseek-flash / deepseek-v4-pro) — pick it under Settings → AI Model and paste your key.</li>
+                <li>Menu-bar marquee can be turned off entirely; answers still reach the card and chat.</li>
+            </ul>]]></description>
+            <pubDate>Thu, 17 Sep 2026 18:37:40 +0000</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/CelestialBrain/dria/releases/download/v1.8.3/dria-v1.8.3.dmg" sparkle:version="29" sparkle:shortVersionString="1.8.3" length="3101229" type="application/octet-stream" sparkle:edSignature="zGqjszXiF+d7MMYQ3bxjLoUFcQwGJ8xs4KSO8gln7PAGTGxe9aGjiRVCuWK3z3VKa0sBzAHD/dHPlrb2ae7QDA==" />
+        </item>
+        <item>
             <title>dria v1.8.2</title>
             <description><![CDATA[<ul>
                 <li><b>Answer card.</b> Copy a question (or anything) and a floating card pops up next to the cursor with the short answer, explanation, and the source note it drew from. It follows the cursor until you click to pin it.</li>
