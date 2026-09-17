@@ -39,8 +39,14 @@ final class AnswerCardModel {
 /// content is drawn at the new size inside a window still at the old size — the
 /// jump you see when the card fills in. Laying out is the only moment the new
 /// height is knowable, so the window follows from here in the same pass.
-final class MeasuringHostingView<Content: View>: NSHostingView<Content> {
+/// Concrete (non-generic) on purpose: a generic `NSHostingView` subclass makes
+/// the Swift optimizer crash on its implicit deinit under Release `-O`
+/// (EarlyPerfInliner). We only ever host `AnyView`, so this costs nothing.
+final class MeasuringHostingView: NSHostingView<AnyView> {
     var onLayout: (() -> Void)?
+
+    required init(rootView: AnyView) { super.init(rootView: rootView) }
+    @available(*, unavailable) required init?(coder: NSCoder) { fatalError() }
 
     override func layout() {
         super.layout()
@@ -64,7 +70,7 @@ final class AnswerCardController {
     private let appState: AppState
     private let model = AnswerCardModel()
     private var panel: CursorCardPanel?
-    private var hosting: MeasuringHostingView<AnyView>?
+    private var hosting: MeasuringHostingView?
     private var followTimer: Timer?
     private var dismissTimer: Timer?
     private var clickMonitor: Any?

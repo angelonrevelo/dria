@@ -7,6 +7,19 @@
         <language>en</language>
 
         <item>
+            <title>dria v1.8.2</title>
+            <description><![CDATA[<ul>
+                <li><b>Answer card.</b> Copy a question (or anything) and a floating card pops up next to the cursor with the short answer, explanation, and the source note it drew from. It follows the cursor until you click to pin it.</li>
+                <li>Customize the card: opacity 5–100% (1% steps, updates live), width, theme, auto-close timer, and an optional "answer first, then reveal" mode.</li>
+                <li><b>Answer anything you copy</b> — optionally skip question-detection and answer every copy. Copying again supersedes an in-flight answer, so nothing gets dropped.</li>
+                <li>The menu-bar dropdown is now a flat, borderless panel (no callout arrow), and opens Settings reliably again.</li>
+                <li>Removed the edge-sliver overlay in favor of the cursor answer card; ⌘⌥3 and post-capture use a compact inline field.</li>
+            </ul>]]></description>
+            <pubDate>Thu, 17 Sep 2026 16:23:31 +0000</pubDate>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/CelestialBrain/dria/releases/download/v1.8.2/dria-v1.8.2.dmg" sparkle:version="26" sparkle:shortVersionString="1.8.2" length="3095066" type="application/octet-stream" sparkle:edSignature="0VXJADREfEFmhEt5TmvwkJPrbW5FViKkxpKStlNmLMftLBJLa2suFVkmE+croMrocd/RtGQweDkKqhvN3tZeAQ==" />
+        </item>
+        <item>
             <title>dria v1.8.1</title>
             <description><![CDATA[<ul>
                 <li>Excel agent gains a <b>compute_formula</b> tool: the AI can now say "=AVERAGE(C13:C26)" and Excel evaluates it, returning the numeric result. Math runs in Excel, not in the LLM — fixes the arithmetic errors we saw on table-scan questions.</li>
