@@ -87,7 +87,6 @@ Logs and crash reports land in `~/Library/Logs/dria/` and are browsable from
 - [docs/internals.md](docs/internals.md) — full feature list, hotkeys, provider setup, usage walkthroughs, source tree, and the logs & diagnostics reference
 - [excel-addin/README.md](excel-addin/README.md) — the Excel add-in
 - [ROADMAP.md](ROADMAP.md) — what is next
-- [docs/OVERLAY.md](docs/OVERLAY.md) — answer-card overlay design
 
 ## License
 
